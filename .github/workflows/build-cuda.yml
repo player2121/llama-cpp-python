@@ -1,0 +1,30 @@
+name: Build CUDA Wheel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install CUDA Toolkit and deps
+        run: sudo apt update && sudo apt install -y g++-12 ninja-build cmake
+
+      - name: Build CUDA wheel
+        run: |
+          export CXX=/usr/bin/g++-12
+          CMAKE_ARGS="-DLLAMA_CUDA=on -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-12 -DCMAKE_CUDA_ARCHITECTURES=89" \
+          pip wheel . --no-deps --wheel-dir dist
+
+      - name: Upload .whl Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: llama_cpp_cuda_wheel
+          path: dist/*.whl
