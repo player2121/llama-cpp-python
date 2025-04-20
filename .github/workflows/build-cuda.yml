@@ -18,14 +18,26 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install build dependencies
+      - name: Install CUDA Toolkit 12.0
         run: |
           sudo apt update
+          sudo apt install -y wget gnupg2 lsb-release
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
+          sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
+          sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/7fa2af80.pub
+          sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
+          sudo apt update
+          sudo apt install -y cuda-toolkit-12-0
+
+      - name: Install build dependencies
+        run: |
           sudo apt install -y g++-12 ninja-build cmake python3-pip
           python3 -m pip install --upgrade pip
 
       - name: Build CUDA wheel
         run: |
+          export PATH=/usr/local/cuda/bin:$PATH
+          export CUDAToolkit_ROOT=/usr/local/cuda
           export CXX=/usr/bin/g++-12
           CMAKE_ARGS="-DLLAMA_CUDA=on -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-12 -DCMAKE_CUDA_ARCHITECTURES=89" \
           pip wheel . --no-deps --wheel-dir dist
@@ -35,4 +47,3 @@ jobs:
         with:
           name: llama_cpp_cuda_wheel
           path: dist/*.whl
-
