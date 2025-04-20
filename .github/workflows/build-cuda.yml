@@ -18,20 +18,20 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install CUDA Toolkit 12.0 for Ubuntu 24.04
+      - name: Install CUDA Toolkit on Ubuntu 24.04
         run: |
           sudo apt update
           sudo apt install -y wget gnupg2 ca-certificates curl software-properties-common
 
-          # Add NVIDIA GPG key using new secure method
+          # Add NVIDIA GPG key securely
           curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-archive-keyring.gpg \
-          | sudo tee /usr/share/keyrings/cuda-archive-keyring.gpg > /dev/null
+            | sudo tee /usr/share/keyrings/cuda-archive-keyring.gpg > /dev/null
 
           echo "deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /" \
-          | sudo tee /etc/apt/sources.list.d/cuda.list > /dev/null
+            | sudo tee /etc/apt/sources.list.d/cuda.list > /dev/null
 
           sudo apt update
-          sudo apt install -y cuda-toolkit-12-0
+          sudo apt install -y cuda
 
       - name: Install build dependencies
         run: |
