@@ -18,9 +18,36 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Install CUDA Toolkit 12.0
+      - name: Install CUDA Toolkit 12.0 for Ubuntu 24.04
         run: |
           sudo apt update
           sudo apt install -y wget gnupg2 ca-certificates curl software-properties-common
 
-          curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/7fa2af80.pub \
+          # Add NVIDIA GPG key using new secure method
+          curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-archive-keyring.gpg \
+          | sudo tee /usr/share/keyrings/cuda-archive-keyring.gpg > /dev/null
+
+          echo "deb [signed-by=/usr/share/keyrings/cuda-archive-keyring.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /" \
+          | sudo tee /etc/apt/sources.list.d/cuda.list > /dev/null
+
+          sudo apt update
+          sudo apt install -y cuda-toolkit-12-0
+
+      - name: Install build dependencies
+        run: |
+          sudo apt install -y g++-12 ninja-build cmake python3-pip
+          python3 -m pip install --upgrade pip
+
+      - name: Build CUDA wheel
+        run: |
+          export PATH=/usr/local/cuda/bin:$PATH
+          export CUDAToolkit_ROOT=/usr/local/cuda
+          export CXX=/usr/bin/g++-12
+          CMAKE_ARGS="-DLLAMA_CUDA=on -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-12 -DCMAKE_CUDA_ARCHITECTURES=89" \
+          pip wheel . --no-deps --wheel-dir dist
+
+      - name: Upload CUDA wheel as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: llama_cpp_cuda_wheel
+          path: dist/*.whl
