@@ -29,7 +29,7 @@ jobs:
           pip wheel . --no-deps --wheel-dir dist
 
       - name: Upload CUDA wheel as artifact
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v3
         with:
           name: llama_cpp_cuda_wheel
           path: dist/*.whl
